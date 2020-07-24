@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basket</title>
+    <!-- <link rel="stylesheet" href="./main.css"> -->
+    <!-- <script src="./main.js" defer></script> -->
+
+    <script>
+
+        window.onload = function () {
+
+            //-------------------------------------------------------------------------------------------------------------
+
+            const catalog = []; //каталог, куда будут помещаться товары(продукты), массив внури которого объекты с товаром
+
+            class Product { // класс для создания объекта продукт
+                constructor(name, price) {
+                    this.name = name;
+                    this.price = price;
+                }
+            }
+
+            //грузим продукты в массив catalog
+            catalog.push(new Product('CPU AMD Ryzen 5 Pinnacle Ridge', 11990));
+            catalog.push(new Product('MB GIGABYTE B450M DS3H', 5390));
+            catalog.push(new Product('GPU SAPPHIRE AMD Radeon RX 580', 17990));
+            catalog.push(new Product('RAM CRUCIAL CT8G4DFS8266 DDR4 - 8Gb', 2590));
+            catalog.push(new Product('БП SEASONIC FOCUS Plus SSR-550PX', 9750));
+            catalog.push(new Product('SDD KINGSTON A400 SA400S37', 2795));
+            catalog.push(new Product('Монитор SAMSUNG C24RG50FQI 23.5', 13990));
+            console.log(catalog);
+
+
+            //--------------- корзина с массивом items, в котором будут объекты товаров ---------------------------  
+
+            class Basket {
+                constructor() {
+                    this.items = []; //создание пустого массива items
+                }
+
+                addItem(item) { // метод добавления в items элемента с id, name, price, currency, count
+
+                    this.items.push(item);
+                }
+
+                add(id, name, price, currency, count) {
+                    this.addItem(new BasketItem(id, name, price, currency, count)); //создание экземпляра класса BasketItem и вызов addItem с параметром экземпляра для добавления в массив items
+                }
+
+                get calculate() { //расчет  общей стоимости корзины
+                    let total = 0;
+                    for (let i = 0; i < this.items.length; i++) {
+                        total += this.items[i].cost;
+                    }
+                    return total;
+                }
+            }
+
+            // корзина, экземпляр класса Basket
+            const basket = new Basket();
+            console.log(basket);
+
+
+            // класс для создания элемента корзины
+            class BasketItem {
+                constructor(id, name, price, currency, count) {
+                    this.id = id;
+                    this.name = name;
+                    this.price = price;
+                    this.currency = currency;
+                    this.count = count;
+                };
+
+                get cost() {
+                    return this.price * this.count;
+                }
+            }
+
+
+            // ------------------- создание элементов html ------------------------------------
+
+            let container = document.createElement('div');
+            container.className = "container";
+            document.body.appendChild(container);
+
+            let divBasket = document.createElement('div');
+            divBasket.className = "basket";
+            container.appendChild(divBasket);
+
+            let product = document.createElement("p")
+            product.className = "basket";
+            product.innerHTML = '<b>Корзина пуста:</b>';
+            divBasket.appendChild(product);
+
+            let button = document.createElement("button")
+            button.className = "basket";
+            button.innerHTML = "Очистить корзину";
+            divBasket.appendChild(button);
+
+            // ----------------------- генерируем html с загрузкой данных из каталога (catalog) ------------------------
+
+            for (let i = 0; i < catalog.length; i++) {
+                let divParent = document.createElement('div');
+                divParent.className = "parent";
+                divParent.id = i;
+                container.appendChild(divParent);
+
+                let parent = document.getElementById(i);
+
+                let product = document.createElement("p")
+                product.className = "product";
+                product.innerHTML = catalog[i].name + ' - ' + catalog[i].price + ' руб.';
+
+                let button = document.createElement("button")
+                button.className = "send";
+                button.id = i;
+                button.innerHTML = "Добавить товар";
+
+                parent.appendChild(product);
+                parent.appendChild(button);
+            }
+
+
+            let btn = document.getElementsByClassName('send');
+            for (let i = 0; i < btn.length; i++)
+                btn[i].onclick = function () {
+                    //alert(this.innerHTML);
+                    basket.add(this.id, catalog[this.id].name, catalog[this.id].price, 'RUB', 1); //добавляем в корзину товар по id кнопки из каталога
+                    const newMessage = getMessageMarkup();
+                    console.log(basket);
+                }
+
+
+            let btnclear = document.getElementsByClassName('basket');
+            for (let i = 0; i < btnclear.length; i++)
+                btnclear[i].onclick = function () {
+                    basket.items.length = 0;
+                    // basket.items.splice(0, basket.items.length);
+                    const newMessage = getMessageMarkup();
+                }
+
+            function getMessageMarkup() {
+                const messagesConatiner = document.querySelector('b');
+                messagesConatiner.innerHTML = 'В корзине ' + basket.items.length + ' товаров на сумму ' + basket.calculate;
+            }
+
+
+        }
+
+
+    </script>
+
+    <style type="text/css">
+        .container {
+            width: 700px;
+            margin: 0 auto;
+            margin-top: 50px;
+        }
+
+        .parent {
+            display: flex;
+            justify-content: space-between;
+            height: 80px;
+            margin: 10px;
+            box-sizing: border-box;
+            background: #efb55f;
+        }
+
+        .basket {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 20px;
+            box-sizing: border-box;
+        }
+
+
+        .product,
+        .send {
+            margin: 25px 30px;
+        }
+    </style>
+
+</head>
+
+<body>
+
+</body>
+
+</html>
