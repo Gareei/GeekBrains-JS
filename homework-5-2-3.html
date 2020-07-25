@@ -14,7 +14,7 @@
 
             //-------------------------------------------------------------------------------------------------------------
 
-            const catalog = []; //каталог, куда будут помещаться товары(продукты), массив внури которого объекты с товаром
+            const catalog = []; //каталог с товаром(продуктами), массив с объектами товаров
 
             class Product { // класс для создания объекта продукт
                 constructor(name, price) {
@@ -23,7 +23,7 @@
                 }
             }
 
-            //грузим продукты в массив catalog
+            //добавление продуктов в catalog
             catalog.push(new Product('CPU AMD Ryzen 5 Pinnacle Ridge', 11990));
             catalog.push(new Product('MB GIGABYTE B450M DS3H', 5390));
             catalog.push(new Product('GPU SAPPHIRE AMD Radeon RX 580', 17990));
@@ -34,119 +34,143 @@
             console.log(catalog);
 
 
-            //--------------- корзина с массивом items, в котором будут объекты товаров ---------------------------  
+            //---------------шаблон корзины Basket с массивом product, в который будут помещены выбранные объекты товаров ---------------------------  
 
             class Basket {
                 constructor() {
-                    this.items = []; //создание пустого массива items
+                    this.product = []; //массива product
                 }
 
-                addItem(item) { // метод добавления в items элемента с id, name, price, currency, count
-
-                    this.items.push(item);
+                add(id, name, price) {
+                    let basketUnit = new BasketProduct(id, name, price); //создание экземпляра класса BasketProduct
+                    this.product.push(basketUnit); // добавления в product элемента с id, name, price
+                    //this.product.push({ id, name, price }); // или вариант добавления объекта товара без использования конструктора basketUnit
                 }
 
-                add(id, name, price, currency, count) {
-                    this.addItem(new BasketItem(id, name, price, currency, count)); //создание экземпляра класса BasketItem и вызов addItem с параметром экземпляра для добавления в массив items
+                del(id) {
+                    this.product.splice(id, 1);
                 }
 
-                get calculate() { //расчет  общей стоимости корзины
-                    let total = 0;
-                    for (let i = 0; i < this.items.length; i++) {
-                        total += this.items[i].cost;
+                clear() {
+                    this.product.length = 0; //очищение корзины
+                }
+
+                get calculate() { //расчет стоимости корзины
+                    let totalValue = 0;
+                    for (let i = 0; i < this.product.length; i++) {
+                        //totalValue += this.product[i].cost;
+                        totalValue += this.product[i].price;
                     }
-                    return total;
+                    return totalValue;
                 }
+            }
+
+            // класс создания объекта продукта выбранного в корзину
+            class BasketProduct {
+                constructor(id, name, price) {
+                    this.id = id;
+                    this.name = name;
+                    this.price = price;
+                };
+
             }
 
             // корзина, экземпляр класса Basket
             const basket = new Basket();
             console.log(basket);
 
-
-            // класс для создания элемента корзины
-            class BasketItem {
-                constructor(id, name, price, currency, count) {
-                    this.id = id;
-                    this.name = name;
-                    this.price = price;
-                    this.currency = currency;
-                    this.count = count;
-                };
-
-                get cost() {
-                    return this.price * this.count;
-                }
-            }
-
-
-            // ------------------- создание элементов html ------------------------------------
+            // ------------------- создание блока корзины  ------------------------------------
 
             let container = document.createElement('div');
             container.className = "container";
             document.body.appendChild(container);
 
-            let divBasket = document.createElement('div');
-            divBasket.className = "basket";
-            container.appendChild(divBasket);
+            let basket_bl = document.createElement('div');
+            basket_bl.className = "basket";
+            container.appendChild(basket_bl);
 
-            let product = document.createElement("p")
-            product.className = "basket";
-            product.innerHTML = '<b>Корзина пуста:</b>';
-            divBasket.appendChild(product);
+            let basket_info = document.createElement("p")
+            basket_info.className = "basket";
+            basket_info.innerHTML = ' <b id = "basketInfo">Корзина пуста</b>';
+            basket_bl.appendChild(basket_info);
 
-            let button = document.createElement("button")
-            button.className = "basket";
-            button.innerHTML = "Очистить корзину";
-            divBasket.appendChild(button);
+            let btn_clear = document.createElement("button")
+            btn_clear.className = "basket";
+            btn_clear.innerHTML = "Очистить корзину";
+            basket_bl.appendChild(btn_clear);
 
-            // ----------------------- генерируем html с загрузкой данных из каталога (catalog) ------------------------
+            btn_clear.addEventListener('click', function () {//обрабтчик события "Очистить корзину"
+                btnProductEvent(null, 'clear');
+            });
+
+            // ----------------------- генерация каталога ------------------------
 
             for (let i = 0; i < catalog.length; i++) {
-                let divParent = document.createElement('div');
-                divParent.className = "parent";
-                divParent.id = i;
-                container.appendChild(divParent);
-
-                let parent = document.getElementById(i);
+                let parent = document.createElement('div');
+                parent.className = "parent";
+                //parent.id = i;
+                container.appendChild(parent);
 
                 let product = document.createElement("p")
                 product.className = "product";
-                product.innerHTML = catalog[i].name + ' - ' + catalog[i].price + ' руб.';
+                product.innerHTML = catalog[i].name + ' - ' + catalog[i].price + ' руб.'; //добавление в innerHTML данных из catalog
 
-                let button = document.createElement("button")
-                button.className = "send";
-                button.id = i;
-                button.innerHTML = "Добавить товар";
+                let btn_add = document.createElement("button")
+                btn_add.className = "btn_add_product";
+                btn_add.innerHTML = "Добавить";
+                // btn_add.id = i; // присвоение кнопке индекса id из catalog для последующей выборки товара по этому id в корзину для вариант №2
+
+                let btn_del = document.createElement("button")
+                btn_del.className = "btn_del_product";
+                btn_del.innerHTML = "Удалить";
+
+                btn_add.addEventListener('click', function () {//обрабтчик события "Добавить"
+                    btnProductEvent(i, 'add');
+                });
+
+                btn_del.addEventListener('click', function () {//обрабтчик события "Удалить"
+                    btnProductEvent(i, 'del');
+                });
 
                 parent.appendChild(product);
-                parent.appendChild(button);
+                parent.appendChild(btn_add);
+                parent.appendChild(btn_del)
             }
 
+            function btnProductEvent(i, event) {
+                //добавление товара из каталога в корзину по нажатию кнопки "Добавить товар" или очищение корзины по кноке "Очистить корзину"
+                event == 'add' ? basket.add(i, catalog[i].name, catalog[i].price) : null;
+                event == 'clear' ? basket.clear() : null;
+                event == 'del' ? basket.del(i) : null;
+                const newMessage = getMessage();
+                console.log(basket);
+            };
 
-            let btn = document.getElementsByClassName('send');
-            for (let i = 0; i < btn.length; i++)
-                btn[i].onclick = function () {
-                    //alert(this.innerHTML);
-                    basket.add(this.id, catalog[this.id].name, catalog[this.id].price, 'RUB', 1); //добавляем в корзину товар по id кнопки из каталога
-                    const newMessage = getMessageMarkup();
-                    console.log(basket);
-                }
-
-
-            let btnclear = document.getElementsByClassName('basket');
-            for (let i = 0; i < btnclear.length; i++)
-                btnclear[i].onclick = function () {
-                    basket.items.length = 0;
-                    // basket.items.splice(0, basket.items.length);
-                    const newMessage = getMessageMarkup();
-                }
-
-            function getMessageMarkup() {
-                const messagesConatiner = document.querySelector('b');
-                messagesConatiner.innerHTML = 'В корзине ' + basket.items.length + ' товаров на сумму ' + basket.calculate;
+            function getMessage() {
+                const messagesConatiner = document.getElementById('basketInfo');
+                basket.product.length > 0 ? messagesConatiner.innerHTML = 'В корзине товаров ' + basket.product.length + ' на сумму ' + basket.calculate + ' руб.' : messagesConatiner.innerHTML = 'Корзина пуста';
             }
 
+            //---------------- вариант №2 добавления товара из каталога в корзину по id кнопки --------------------------------
+
+            //let btn = document.getElementsByClassName('btn_add_product');
+
+            // for (let i = 0; i < btn.length; i++)
+            //     btn[i].onclick = function () {
+            //         //alert(this.innerHTML, this.id);
+            //         basket.add(this.id, catalog[this.id].name, catalog[this.id].price); 
+            //         const newMessage = getMessage();
+            //         console.log(basket);
+            //     }
+
+
+            // let btnclear = document.getElementsByClassName('basket');
+            // for (let i = 0; i < btnclear.length; i++)
+            //     btnclear[i].onclick = function () {
+            //         basket.product.length = 0;
+            //         // basket.product.splice(0, basket.product.length);
+            //         const newMessage = getMessage();
+            //     }
 
         }
 
@@ -158,11 +182,12 @@
             width: 700px;
             margin: 0 auto;
             margin-top: 50px;
+
         }
 
         .parent {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-end;
             height: 80px;
             margin: 10px;
             box-sizing: border-box;
@@ -173,13 +198,20 @@
             display: flex;
             justify-content: space-between;
             margin: 10px 20px;
-            box-sizing: border-box;
+
         }
 
 
         .product,
-        .send {
+        .btn_add_product,
+        .btn_del_product {
             margin: 25px 30px;
+        }
+
+
+        .product {
+            flex-basis: 100%;
+
         }
     </style>
 
